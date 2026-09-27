@@ -1,0 +1,127 @@
+import java.util.*;
+
+public class Week8Problem1 {
+    static abstract class Question {
+        String text;
+        String answer;
+
+        Question(String text, String answer) {
+            this.text = text;
+            this.answer = answer;
+        }
+
+        abstract boolean checkAnswer(String ans);
+    }
+
+    static class MCQ extends Question {
+        MCQ(String text, String answer) {
+            super(text, answer);
+        }
+
+        boolean checkAnswer(String ans) {
+            return answer.equalsIgnoreCase(ans);
+        }
+    }
+
+    static class TrueFalse extends Question {
+        TrueFalse(String text, String answer) {
+            super(text, answer);
+        }
+
+        boolean checkAnswer(String ans) {
+            return answer.equalsIgnoreCase(ans);
+        }
+    }
+
+    static class Examination {
+        String name;
+        List<Question> questions = new ArrayList<>();
+
+        Examination(String name) {
+            this.name = name;
+        }
+
+        void addQuestion(Question q) {
+            questions.add(q);
+        }
+    }
+
+    static class Attempt {
+        Examination exam;
+        Map<Integer, String> answers = new HashMap<>();
+        boolean submitted = false;
+
+        Attempt(Examination exam) {
+            this.exam = exam;
+        }
+
+        void answer(int q, String ans) {
+            if (submitted) {
+                System.out.println("Attempt already submitted");
+                return;
+            }
+            answers.put(q, ans);
+            System.out.println("Question " + (q + 1) + " answered with " + ans);
+        }
+
+        void submit() {
+            if (submitted) {
+                System.out.println("Attempt already submitted");
+                return;
+            }
+
+            submitted = true;
+            int score = 0;
+
+            for (int i = 0; i < exam.questions.size(); i++) {
+                if (exam.questions.get(i).checkAnswer(answers.getOrDefault(i, ""))) {
+                    score++;
+                }
+            }
+
+            System.out.println("Examination '" + exam.name + "' submitted successfully.");
+            System.out.println("Result: " + score + "/" + exam.questions.size() + " correct");
+        }
+    }
+
+    static class Student {
+        String name;
+        Map<String, Attempt> attempts = new HashMap<>();
+
+        Student(String name) {
+            this.name = name;
+        }
+
+        void start(Examination exam) {
+            if (attempts.containsKey(exam.name)) {
+                System.out.println("Attempt already exists");
+                return;
+            }
+
+            attempts.put(exam.name, new Attempt(exam));
+            System.out.println("Examination '" + exam.name + "' started by " + name);
+        }
+
+        void answer(String exam, int q, String ans) {
+            Attempt a = attempts.get(exam);
+            if (a != null) a.answer(q, ans);
+        }
+
+        void submit(String exam) {
+            Attempt a = attempts.get(exam);
+            if (a != null) a.submit();
+        }
+    }
+
+    public static void main(String[] args) {
+        Examination exam = new Examination("Math Quiz");
+        exam.addQuestion(new MCQ("2 + 2?", "A"));
+        exam.addQuestion(new MCQ("Capital of India?", "B"));
+
+        Student s = new Student("John");
+        s.start(exam);
+        s.answer("Math Quiz", 0, "A");
+        s.answer("Math Quiz", 1, "C");
+        s.submit("Math Quiz");
+    }
+}

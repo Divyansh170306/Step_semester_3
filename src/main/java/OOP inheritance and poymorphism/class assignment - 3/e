@@ -1,0 +1,166 @@
+import java.util.*;
+
+public class Week8Problem5 {
+    static class FoodItem {
+        String name;
+        double price;
+
+        FoodItem(String name, double price) {
+            this.name = name;
+            this.price = price;
+        }
+    }
+
+    static class Restaurant {
+        String name;
+
+        Restaurant(String name) {
+            this.name = name;
+        }
+    }
+
+    static class LineItem {
+        FoodItem item;
+        int quantity;
+
+        LineItem(FoodItem item, int quantity) {
+            this.item = item;
+            this.quantity = quantity;
+        }
+
+        double getTotal() {
+            return item.price * quantity;
+        }
+    }
+
+    interface IPaymentMethod {
+        boolean pay(double amount);
+        String getName();
+    }
+
+    static class CreditCardPayment implements IPaymentMethod {
+        public boolean pay(double amount) {
+            return true;
+        }
+
+        public String getName() {
+            return "Credit Card";
+        }
+    }
+
+    static class DigitalWalletPayment implements IPaymentMethod {
+        public boolean pay(double amount) {
+            return false;
+        }
+
+        public String getName() {
+            return "Digital Wallet";
+        }
+    }
+
+    static class CashOnDelivery implements IPaymentMethod {
+        public boolean pay(double amount) {
+            return true;
+        }
+
+        public String getName() {
+            return "Cash on Delivery";
+        }
+    }
+
+    static class NotificationService {
+        void notifyCustomer(String message) {
+            System.out.println("Notification: " + message);
+        }
+    }
+
+    static class Customer {
+        String name;
+        List<Order> orders = new ArrayList<>();
+
+        Customer(String name) {
+            this.name = name;
+        }
+
+        void addOrder(Order order) {
+            orders.add(order);
+        }
+    }
+
+    static class Order {
+        static int count = 122;
+        int orderId = ++count;
+
+        Restaurant restaurant;
+        List<LineItem> items = new ArrayList<>();
+        String status = "Created";
+
+        Order(Restaurant restaurant) {
+            this.restaurant = restaurant;
+            System.out.println("Order created.");
+        }
+
+        void addItem(FoodItem item, int quantity) {
+            if (quantity <= 0) {
+                System.out.println("Invalid quantity");
+                return;
+            }
+
+            items.add(new LineItem(item, quantity));
+            System.out.println("Added " + item.name + " (Qty " + quantity + ")");
+        }
+
+        double getTotal() {
+            double total = 0;
+
+            for (LineItem item : items) {
+                total += item.getTotal();
+            }
+
+            return total;
+        }
+
+        void placeOrder(IPaymentMethod payment, NotificationService notify) {
+            if (items.isEmpty()) {
+                System.out.println("Cannot place order: Order must contain at least one item.");
+                return;
+            }
+
+            status = "Pending Payment";
+            System.out.println("Order placed successfully.");
+
+            boolean success = payment.pay(getTotal());
+
+            if (success) {
+                status = "Paid";
+                System.out.println("Payment via " + payment.getName() + " successful.");
+                notify.notifyCustomer("Order #" + orderId + " placed and paid.");
+            } else {
+                System.out.println("Payment via " + payment.getName() + " failed.");
+                notify.notifyCustomer("Order #" + orderId + " placed, awaiting payment.");
+            }
+
+            System.out.println("Order status: " + status);
+        }
+    }
+
+    public static void main(String[] args) {
+        Customer c = new Customer("John");
+        Restaurant r = new Restaurant("Food Hub");
+        NotificationService notify = new NotificationService();
+
+        Order o1 = new Order(r);
+        c.addOrder(o1);
+
+        o1.addItem(new FoodItem("Pizza", 200), 2);
+        o1.addItem(new FoodItem("Soda", 50), 1);
+
+        o1.placeOrder(new CreditCardPayment(), notify);
+
+        Order o2 = new Order(r);
+        c.addOrder(o2);
+
+        o2.addItem(new FoodItem("Burger", 150), 1);
+        o2.placeOrder(new DigitalWalletPayment(), notify);
+    }
+}

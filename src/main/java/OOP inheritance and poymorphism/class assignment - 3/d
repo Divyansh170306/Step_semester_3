@@ -1,0 +1,120 @@
+import java.time.*;
+
+public class Week8Problem4 {
+    interface LeavePolicy {
+        int maxLeaveDays();
+    }
+
+    static abstract class Employee implements LeavePolicy {
+        String name;
+
+        Employee(String name) {
+            this.name = name;
+        }
+    }
+
+    static class FullTime extends Employee {
+        FullTime(String name) {
+            super(name);
+        }
+
+        public int maxLeaveDays() {
+            return 30;
+        }
+    }
+
+    static class PartTime extends Employee {
+        PartTime(String name) {
+            super(name);
+        }
+
+        public int maxLeaveDays() {
+            return 15;
+        }
+    }
+
+    static class Contract extends Employee {
+        Contract(String name) {
+            super(name);
+        }
+
+        public int maxLeaveDays() {
+            return 10;
+        }
+    }
+
+    static class LeaveRequest {
+        Employee employee;
+        LocalDate start, end;
+        String status = "Pending";
+
+        LeaveRequest(Employee employee, LocalDate start, LocalDate end) {
+            this.employee = employee;
+            this.start = start;
+            this.end = end;
+        }
+
+        void review(String decision) {
+            if (!status.equals("Pending")) {
+                System.out.println("Cannot change status: "
+                        + status + " request cannot revert to Pending.");
+                return;
+            }
+
+            if (!decision.equals("Approved") && !decision.equals("Rejected")) {
+                System.out.println("Invalid decision");
+                return;
+            }
+
+            long days = end.toEpochDay() - start.toEpochDay() + 1;
+
+            if (decision.equals("Approved") &&
+                    days > employee.maxLeaveDays()) {
+                System.out.println("Leave exceeds policy");
+                return;
+            }
+
+            status = decision;
+            System.out.println("Leave request for " + employee.name
+                    + " " + status.toLowerCase() + ".");
+            System.out.println("Status: " + status);
+        }
+    }
+
+    static class LeaveManager {
+        void submit(LeaveRequest r) {
+            if (r.start.isAfter(r.end)) {
+                System.out.println("Invalid dates");
+                return;
+            }
+
+            System.out.println("Leave request submitted by "
+                    + r.employee.name + " for " + r.start + " to " + r.end);
+            System.out.println("Status: " + r.status);
+        }
+
+        void review(LeaveRequest r, String decision) {
+            r.review(decision);
+        }
+    }
+
+    public static void main(String[] args) {
+        LeaveManager manager = new LeaveManager();
+
+        Employee e1 = new FullTime("John Doe");
+        LeaveRequest r1 = new LeaveRequest(e1,
+                LocalDate.of(2024, 10, 10),
+                LocalDate.of(2024, 10, 12));
+
+        manager.submit(r1);
+        manager.review(r1, "Approved");
+        manager.review(r1, "Pending");
+
+        Employee e2 = new PartTime("Jane Smith");
+        LeaveRequest r2 = new LeaveRequest(e2,
+                LocalDate.of(2024, 11, 1),
+                LocalDate.of(2024, 11, 5));
+
+        manager.submit(r2);
+    }
+}
