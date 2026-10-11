@@ -1,0 +1,74 @@
+import java.util.*;
+
+class Resource {
+    String id;
+    boolean reservable;
+    boolean downloadable;
+
+    Resource(String id, boolean reservable, boolean downloadable) {
+        this.id = id;
+        this.reservable = reservable;
+        this.downloadable = downloadable;
+    }
+}
+
+public class LibraryPlatform {
+    public static void main(String[] args) {
+        ArrayList<Resource> list = new ArrayList<>();
+
+        add(list, new Resource("B1", true, false));
+        add(list, new Resource("B1", true, false));
+        add(list, new Resource("E1", true, true));
+
+        reserve(list, "B1", "M1");
+        download(list, "B1");
+        download(list, "E1");
+        find(list, "E1");
+    }
+
+    static void add(ArrayList<Resource> list, Resource r) {
+        for (Resource x : list) {
+            if (x.id.equals(r.id)) {
+                System.out.println("duplicate rejected");
+                return;
+            }
+        }
+
+        list.add(r);
+        list.sort(Comparator.comparing(x -> x.id));
+        System.out.println(r.id + " added");
+    }
+
+    static void reserve(ArrayList<Resource> list, String id, String member) {
+        for (Resource r : list) {
+            if (r.id.equals(id)) {
+                if (r.reservable)
+                    System.out.println(id + " reserved for " + member);
+                else
+                    System.out.println(id + " rejected: reserve unsupported");
+                return;
+            }
+        }
+    }
+
+    static void download(ArrayList<Resource> list, String id) {
+        for (Resource r : list) {
+            if (r.id.equals(id)) {
+                if (r.downloadable)
+                    System.out.println(id + " downloaded");
+                else
+                    System.out.println(id + " rejected: download unsupported");
+                return;
+            }
+        }
+    }
+
+    static void find(ArrayList<Resource> list, String id) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).id.equals(id)) {
+                System.out.println(id + " found at index " + i);
+                return;
+            }
+        }
+    }
+}
